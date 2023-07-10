@@ -2,7 +2,7 @@ import os
 import re
 import sys
 
-raw_git = os.popen('git log next --since="24 hours" --pretty=format:"- %h - *+%al-%an*: %s"').read()
+raw_git = os.popen('git log next --since="120 hours" --pretty=format:"- %h - *+%al-%an*: %s"').read()
 raw_merge_log = os.popen('git log next --merges --since="2400 hours" --pretty=format:"%s"').read()
 
 

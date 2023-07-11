@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import json
+from urllib.error import HTTPError
 
 main_repo_url = "https://github.com/eried/portapack-mayhem.git"
 main_repo_identifier = "eried/portapack-mayhem"
@@ -57,16 +58,22 @@ def compile_line(line):
 
 
 def extract_first_login(json_data):
-    data = json.loads(json_data)
+    if not json_data:  # if returned null
+        return None
 
-    # if json is 403, return False
-    if isinstance(data, dict) and any("API rate limit exceeded for user ID" in value for value in data.values()):
-        return False
+    try:
+        data = json.loads(json_data)
 
-    if isinstance(data, list) and len(data) > 0:
-        first_object = data[0]
-        if 'author' in first_object and 'login' in first_object['author']:
-            return first_object['author']['login']
+        if isinstance(data, list) and len(data) > 0:
+            first_object = data[0]
+            if 'author' in first_object and 'login' in first_object['author']:
+                return first_object['author']['login']
+
+    except HTTPError as e:
+        if e.code == 403 and "API rate limit exceeded" in str(e):
+            return False
+    except json.decoder.JSONDecodeError:
+        return None
 
     return None
 

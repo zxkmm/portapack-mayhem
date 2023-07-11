@@ -62,7 +62,7 @@ def extract_first_login(json_data):
     data = json.loads(json_data)
 
     # if json is 403, return False
-    if isinstance(data, dict) and 'message' in data and data['message'] == "API rate limit exceeded for user ID":
+    if isinstance(data, dict) and any("API rate limit exceeded for user ID" in value for value in data.values()):
         return False
 
     if isinstance(data, list) and len(data) > 0:

@@ -36,7 +36,7 @@ def compute_username(line):
         stripped = extract_first_login(fetched_now_item_json)
         if stripped is False:  # 403
             return "@" + stripped_fallback
-        elif stripped == "app/":
+        elif stripped == "app/":  # user did their commit with github app
             return "@" + stripped_fallback
     else:  # exception and edge cases
         return "@" + stripped_fallback
@@ -60,13 +60,14 @@ def extract_first_login(json_data):
     data = json.loads(json_data)
 
     # if json is 403, return False
-    if isinstance(data, dict) and 'message' in data and data['message'] == "API rate limit exceeded for user ID":
+    if isinstance(data, dict) and any("API rate limit exceeded for user ID" in value for value in data.values()):
         return False
 
     if isinstance(data, list) and len(data) > 0:
         first_object = data[0]
         if 'author' in first_object and 'login' in first_object['author']:
             return first_object['author']['login']
+
     return None
 
 

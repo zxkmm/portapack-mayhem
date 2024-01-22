@@ -59,7 +59,7 @@ jobs:
           CHANGELOG="${CHANGELOG//'%'/'%25'}"
           CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
           CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
-          echo "content=$CHANGELOG" >> $GITHUB_OUTPUT
+          printf "$(echo -e $CHANGELOG)" >> $GITHUB_OUTPUT
         id: changelog
       - name: Create Release
         id: create_release

@@ -59,6 +59,10 @@ class ReplayThread {
         TERMINATED
     };
 
+    uint32_t samples_processed() const {
+        return blk_processed_ / 8;
+    }
+
    private:
     ReplayConfig config;
     std::unique_ptr<stream::Reader> reader;
@@ -67,6 +71,9 @@ class ReplayThread {
     Thread* thread{nullptr};
 
     static msg_t static_fn(void* arg);
+
+    uint32_t samples_processed_{0};
+    uint32_t blk_processed_{0};
 
     uint32_t run();
 };

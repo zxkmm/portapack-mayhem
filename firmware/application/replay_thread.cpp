@@ -81,6 +81,9 @@ uint32_t ReplayThread::run() {
     };
 
     constexpr size_t block_size = 512;
+//    constexpr size_t sample_size = 16;
+//    constexpr size_t num_samples_per_block = block_size / sample_size;
+
 
     // While empty buffers fifo is not empty...
     while (!buffers.empty()) {
@@ -96,6 +99,7 @@ uint32_t ReplayThread::run() {
                 if (read_result.is_error()) {
                     return READ_ERROR;
                 }
+//                samples_processed_ ++;
             }
 
             prefill_buffer->set_size(config.read_size);
@@ -116,6 +120,7 @@ uint32_t ReplayThread::run() {
             if (read_result.value() == 0) {
                 return END_OF_FILE;
             }
+            blk_processed_ ++;
         }
 
         buffer->set_size(buffer->capacity());

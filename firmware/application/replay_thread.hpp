@@ -49,6 +49,8 @@ class ReplayThread {
     ReplayThread& operator=(const ReplayThread&) = delete;
     ReplayThread& operator=(ReplayThread&&) = delete;
 
+    uint64_t total_bytes_read = 0;
+
     const ReplayConfig& state() const {
         return config;
     };
@@ -58,6 +60,10 @@ class ReplayThread {
         END_OF_FILE,
         TERMINATED
     };
+
+    uint64_t samples_processed() const {
+        return total_bytes_read;
+    }
 
    private:
     ReplayConfig config;

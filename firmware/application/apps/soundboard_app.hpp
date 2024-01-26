@@ -70,6 +70,9 @@ class SoundBoardView : public View {
     uint32_t page = 1;
     uint32_t c_page = 1;
 
+    size_t temp_current_progress = 0;
+    size_t temp_total_progress = 0;
+
     std::vector<std::filesystem::path> file_list{};
 
     const size_t read_size{2048};  // Less ?
@@ -142,9 +145,13 @@ class SoundBoardView : public View {
         6,
         "Random"};
 
-    // ProgressBar progressbar {
-    //	{ 0 * 8, 30 * 8 - 4, 30 * 8, 16 }
-    // };
+//     ProgressBar progressbar {
+//    	{ 0 * 8, 30 * 8 - 4, 30 * 8, 16 }
+//     };
+
+    Text text_temp_progress{
+        {0 * 8, 30 * 8 - 4, 30 * 8, 16},
+        ""};
 
     TransmitterView tx_view{
         16 * 16,

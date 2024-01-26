@@ -45,6 +45,7 @@ ReplayThread::ReplayThread(
     std::function<void(uint32_t return_code)> terminate_callback)
     : config{read_size, buffer_count},
       reader{std::move(reader)},
+      total_bytes_read{0},
       ready_sig{ready_signal},
       terminate_callback{std::move(terminate_callback)} {
     // Need significant stack for FATFS
@@ -96,6 +97,7 @@ uint32_t ReplayThread::run() {
                 if (read_result.is_error()) {
                     return READ_ERROR;
                 }
+                total_bytes_read = read_result.value();
             }
 
             prefill_buffer->set_size(config.read_size);
@@ -116,7 +118,10 @@ uint32_t ReplayThread::run() {
             if (read_result.value() == 0) {
                 return END_OF_FILE;
             }
+
         }
+
+        total_bytes_read = read_result.value();
 
         buffer->set_size(buffer->capacity());
 

@@ -51,7 +51,7 @@ void SoundBoardView::stop() {
 
 void SoundBoardView::handle_replay_thread_done(const uint32_t return_code) {
     stop();
-    // progressbar.set_value(0);
+//     progressbar.set_value(0);
 
     if (return_code == ReplayThread::END_OF_FILE) {
         if (check_random.value()) {
@@ -99,7 +99,8 @@ void SoundBoardView::start_tx(const uint32_t id) {
 
     playing_id = id;
 
-    // progressbar.set_max(reader->sample_count());
+//     progressbar.set_max(replay_thread->samples_processed());
+     temp_total_progress = replay_thread->samples_processed();
 
     // button_play.set_bitmap(&bitmap_stop);
 
@@ -146,7 +147,9 @@ void SoundBoardView::start_tx(const uint32_t id) {
 
 void SoundBoardView::on_tx_progress(const uint32_t progress) {
     (void)progress;  // avoid warning
-                     // progressbar.set_value(progress);
+//                      progressbar.set_value(progress);
+                      temp_current_progress = progress;
+                      text_temp_progress.set(to_string_dec_uint(temp_current_progress) + "/" + to_string_dec_uint(temp_total_progress));
 }
 
 void SoundBoardView::on_select_entry() {
@@ -237,7 +240,8 @@ SoundBoardView::SoundBoardView(
                   &options_tone_key,
                   //&text_title,
                   //&text_duration,
-                  //&progressbar,
+//                  &progressbar,
+                  &text_temp_progress,
                   &field_volume,
                   &text_volume_disabled,
                   &page_info,

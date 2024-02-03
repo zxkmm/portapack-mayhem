@@ -185,6 +185,19 @@ void FocusManager::update(
             return a.second < b.second;
         };
 
+        if (!collection.empty()) {
+            size_t index = 0;
+            while (index < collection.size() && collection[index].first == nullptr) {
+                index++;
+            }
+
+            if (index < collection.size()) {
+                set_focus_widget(collection[index].first);
+            } else {
+                set_focus_widget(collection.back().first);
+            }
+        }
+
         const auto nearest = std::min_element(collection.cbegin(), collection.cend(), compare_fn);
         // Up and left to indicate back
         if (event == KeyEvent::Back) {
@@ -193,9 +206,21 @@ void FocusManager::update(
             if (!collection.empty())
                 set_focus_widget(collection[0].first);
         } else if (nearest != collection.cend()) {
-            // focus->blur();
-            const auto new_focus = (*nearest).first;
-            set_focus_widget(new_focus);
+            auto it = nearest;
+            while (it != collection.cend() && it->first == nullptr) {
+                ++it;
+            }
+
+            if (it != collection.cend()) {
+                const auto new_focus = it->first;
+                if (new_focus->visible())
+                    set_focus_widget(new_focus);
+            } else {
+                ////////////mark2
+                const auto new_focus = collection.back().first;
+                if (new_focus->visible())
+                    set_focus_widget(new_focus);
+            }
         } else {
             if ((focus_widget()->id >= 0) && (event == KeyEvent::Left)) {
                 // Stuck left, move to back button

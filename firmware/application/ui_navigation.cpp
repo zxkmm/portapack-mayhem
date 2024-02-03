@@ -674,9 +674,12 @@ Widget* NavigationView::view() const {
     return children_.empty() ? nullptr : children_[0];
 }
 
-void NavigationView::focus() {
-    if (view())
+void NavigationView::focus() { /////////mark1
+    if (view()) {
         view()->focus();
+    } else {
+        this->pop();
+    }
 }
 
 bool NavigationView::set_on_pop(std::function<void()> on_pop) {

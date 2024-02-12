@@ -1,6 +1,8 @@
 /*
  * Copyright (C) 2015 Jared Boone, ShareBrained Technology, Inc.
  * Copyright (C) 2016 Furrtek
+ * Copyright (C) 2024 u-foka
+ * Copyleft (ɔ) 2024 zxkmm under GPL license
  *
  * This file is part of PortaPack.
  *
@@ -262,6 +264,12 @@ class SystemStatusView : public View {
         {0, 0 * 16, 8, 1 * 16},
         &bitmap_icon_clk_int,
         Color::light_grey(),
+        Color::dark_grey()};
+
+    ImageButton button_fake_brightness{
+        {0, 0, 2 * 8, 1 * 16},
+        &bitmap_icon_brightness,
+        Color::green(),
         Color::dark_grey()};
 
     SDCardStatusView sd_card_status_view{

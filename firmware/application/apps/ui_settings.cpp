@@ -3,6 +3,8 @@
  * Copyright (C) 2016 Furrtek
  * Copyright (C) 2023 gullradriel, Nilorea Studio Inc.
  * Copyright (C) 2023 Kyle Reed
+ * Copyright (C) 2024 Mark Thompson
+ * Copyleft (ɔ) 2024 zxkmm under GPL license
  *
  * This file is part of PortaPack.
  *
@@ -81,6 +83,7 @@ SetDateTimeView::SetDateTimeView(
         &field_second,
         &text_weekday,
         &text_day_of_year,
+        &text_in_dst_range,
         &checkbox_dst_enable,
         &options_dst_start_which,
         &options_dst_start_weekday,
@@ -100,17 +103,24 @@ SetDateTimeView::SetDateTimeView(
     options_dst_start_month.set_options(month_options);
     options_dst_end_month.set_options(month_options);
 
+    const auto dst_changed_fn = [this](size_t, uint32_t) {
+        handle_date_field_update();
+    };
+
     const auto date_changed_fn = [this](int32_t) {
-        auto weekday = rtc_time::day_of_week(field_year.value(), field_month.value(), field_day.value());
-        auto doy = rtc_time::day_of_year(field_year.value(), field_month.value(), field_day.value());
-        bool valid_date = (field_day.value() <= rtc_time::days_per_month(field_year.value(), field_month.value()));
-        text_weekday.set(valid_date ? weekday_options[weekday].first : "-");
-        text_day_of_year.set(valid_date ? to_string_dec_uint(doy, 3) : "-");
+        handle_date_field_update();
     };
 
     field_year.on_change = date_changed_fn;
     field_month.on_change = date_changed_fn;
     field_day.on_change = date_changed_fn;
+
+    options_dst_start_which.on_change = dst_changed_fn;
+    options_dst_start_weekday.on_change = dst_changed_fn;
+    options_dst_start_month.on_change = dst_changed_fn;
+    options_dst_end_which.on_change = dst_changed_fn;
+    options_dst_end_weekday.on_change = dst_changed_fn;
+    options_dst_end_month.on_change = dst_changed_fn;
 
     rtc::RTC datetime;
     rtc_time::now(datetime);
@@ -146,6 +156,17 @@ void SetDateTimeView::form_init(const SetDateTimeModel& model) {
 }
 
 SetDateTimeModel SetDateTimeView::form_collect() {
+    return {
+        .year = static_cast<uint16_t>(field_year.value()),
+        .month = static_cast<uint8_t>(field_month.value()),
+        .day = static_cast<uint8_t>(field_day.value()),
+        .hour = static_cast<uint8_t>(field_hour.value()),
+        .minute = static_cast<uint8_t>(field_minute.value()),
+        .second = static_cast<uint8_t>(field_second.value()),
+        .dst = dst_collect()};
+}
+
+pmem::dst_config_t SetDateTimeView::dst_collect() {
     pmem::dst_config_t dst;
     dst.b.dst_enabled = static_cast<uint8_t>(checkbox_dst_enable.value());
     dst.b.start_which = static_cast<uint8_t>(options_dst_start_which.selected_index_value());
@@ -154,14 +175,16 @@ SetDateTimeModel SetDateTimeView::form_collect() {
     dst.b.end_which = static_cast<uint8_t>(options_dst_end_which.selected_index_value());
     dst.b.end_weekday = static_cast<uint8_t>(options_dst_end_weekday.selected_index_value());
     dst.b.end_month = static_cast<uint8_t>(options_dst_end_month.selected_index_value());
-    return {
-        .year = static_cast<uint16_t>(field_year.value()),
-        .month = static_cast<uint8_t>(field_month.value()),
-        .day = static_cast<uint8_t>(field_day.value()),
-        .hour = static_cast<uint8_t>(field_hour.value()),
-        .minute = static_cast<uint8_t>(field_minute.value()),
-        .second = static_cast<uint8_t>(field_second.value()),
-        .dst = dst};
+    return dst;
+}
+
+void SetDateTimeView::handle_date_field_update() {
+    auto weekday = rtc_time::day_of_week(field_year.value(), field_month.value(), field_day.value());
+    auto doy = rtc_time::day_of_year(field_year.value(), field_month.value(), field_day.value());
+    bool valid_date = (field_day.value() <= rtc_time::days_per_month(field_year.value(), field_month.value()));
+    text_weekday.set(valid_date ? weekday_options[weekday].first : "-");
+    text_day_of_year.set(valid_date ? to_string_dec_uint(doy, 3) : "-");
+    text_in_dst_range.set(checkbox_dst_enable.value() && rtc_time::dst_test_date_range(field_year.value(), doy, dst_collect()) ? "DST" : "");
 }
 
 /* SetRadioView ******************************************/
@@ -293,6 +316,7 @@ SetUIView::SetUIView(NavigationView& nav) {
                   &toggle_bias_tee,
                   &toggle_clock,
                   &toggle_mute,
+                  &toggle_fake_brightness,
                   &toggle_sd_card,
                   &button_save,
                   &button_cancel});
@@ -326,6 +350,7 @@ SetUIView::SetUIView(NavigationView& nav) {
     toggle_clock.set_value(!pmem::ui_hide_clock());
     toggle_speaker.set_value(!pmem::ui_hide_speaker());
     toggle_mute.set_value(!pmem::ui_hide_mute());
+    toggle_fake_brightness.set_value(!pmem::ui_hide_fake_brightness());
     toggle_sd_card.set_value(!pmem::ui_hide_sd_card());
 
     button_save.on_select = [&nav, this](Button&) {
@@ -352,6 +377,7 @@ SetUIView::SetUIView(NavigationView& nav) {
         pmem::set_ui_hide_clock(!toggle_clock.value());
         pmem::set_ui_hide_speaker(!toggle_speaker.value());
         pmem::set_ui_hide_mute(!toggle_mute.value());
+        pmem::set_ui_hide_fake_brightness(!toggle_fake_brightness.value());
         pmem::set_ui_hide_sd_card(!toggle_sd_card.value());
         send_system_refresh();
 
@@ -655,13 +681,16 @@ void SetQRCodeView::focus() {
 SetEncoderDialView::SetEncoderDialView(NavigationView& nav) {
     add_children({&labels,
                   &field_encoder_dial_sensitivity,
+                  &field_encoder_rate_multiplier,
                   &button_save,
                   &button_cancel});
 
-    field_encoder_dial_sensitivity.set_by_value(pmem::config_encoder_dial_sensitivity());
+    field_encoder_dial_sensitivity.set_by_value(pmem::encoder_dial_sensitivity());
+    field_encoder_rate_multiplier.set_value(pmem::encoder_rate_multiplier());
 
     button_save.on_select = [&nav, this](Button&) {
         pmem::set_encoder_dial_sensitivity(field_encoder_dial_sensitivity.selected_index_value());
+        pmem::set_encoder_rate_multiplier(field_encoder_rate_multiplier.value());
         nav.pop();
     };
 
@@ -726,6 +755,34 @@ void SetConfigModeView::focus() {
     button_save.focus();
 }
 
+/* FakeBrightnessView ************************************/
+
+SetFakeBrightnessView::SetFakeBrightnessView(NavigationView& nav) {
+    add_children({&labels,
+                  &field_fake_brightness,
+                  &button_save,
+                  &button_cancel,
+                  &checkbox_brightness_switch});
+
+    field_fake_brightness.set_by_value(pmem::fake_brightness_level());
+    checkbox_brightness_switch.set_value(pmem::apply_fake_brightness());
+
+    button_save.on_select = [&nav, this](Button&) {
+        pmem::set_apply_fake_brightness(checkbox_brightness_switch.value());
+        pmem::set_fake_brightness_level(field_fake_brightness.selected_index_value());
+        send_system_refresh();
+        nav.pop();
+    };
+
+    button_cancel.on_select = [&nav, this](Button&) {
+        nav.pop();
+    };
+}
+
+void SetFakeBrightnessView::focus() {
+    button_save.focus();
+}
+
 /* SettingsMenuView **************************************/
 
 SettingsMenuView::SettingsMenuView(NavigationView& nav) {
@@ -746,6 +803,7 @@ SettingsMenuView::SettingsMenuView(NavigationView& nav) {
         {"SD Card", ui::Color::dark_cyan(), &bitmap_icon_sdcard, [&nav]() { nav.push<SetSDCardView>(); }},
         {"User Interface", ui::Color::dark_cyan(), &bitmap_icon_options_ui, [&nav]() { nav.push<SetUIView>(); }},
         {"QR Code", ui::Color::dark_cyan(), &bitmap_icon_qr_code, [&nav]() { nav.push<SetQRCodeView>(); }},
+        {"Brightness", ui::Color::dark_cyan(), &bitmap_icon_brightness, [&nav]() { nav.push<SetFakeBrightnessView>(); }},
     });
     set_max_rows(2);  // allow wider buttons
 }

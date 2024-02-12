@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 Jared Boone, ShareBrained Technology, Inc.
  * Copyright (C) 2016 Furrtek
+ * Copyright (C) 2024 Mark Thompson
  *
  * This file is part of PortaPack.
  *
@@ -51,7 +52,7 @@ void SoundBoardView::stop() {
 
 void SoundBoardView::handle_replay_thread_done(const uint32_t return_code) {
     stop();
-    // progressbar.set_value(0);
+    progressbar.set_value(0);
 
     if (return_code == ReplayThread::END_OF_FILE) {
         if (check_random.value()) {
@@ -89,6 +90,7 @@ void SoundBoardView::start_tx(const uint32_t id) {
 
     uint32_t tone_key_index = options_tone_key.selected_index();
     uint32_t sample_rate;
+    uint8_t bits_per_sample;
 
     stop();
 
@@ -99,11 +101,12 @@ void SoundBoardView::start_tx(const uint32_t id) {
 
     playing_id = id;
 
-    // progressbar.set_max(reader->sample_count());
+    progressbar.set_max(reader->sample_count());
 
     // button_play.set_bitmap(&bitmap_stop);
 
     sample_rate = reader->sample_rate();
+    bits_per_sample = reader->bits_per_sample();
 
     replay_thread = std::make_unique<ReplayThread>(
         std::move(reader),
@@ -120,7 +123,7 @@ void SoundBoardView::start_tx(const uint32_t id) {
         transmitter_model.channel_bandwidth(),
         0,  // Gain is unused
         8,  // shift_bits_s16, default 8 bits, but also unused
-        8,  // bits per sample
+        bits_per_sample,
         TONES_F2D(tone_key_frequency(tone_key_index), TONES_SAMPLERATE),
         false,  // AM
         false,  // DSB
@@ -146,8 +149,7 @@ void SoundBoardView::start_tx(const uint32_t id) {
 }*/
 
 void SoundBoardView::on_tx_progress(const uint32_t progress) {
-    (void)progress;  // avoid warning
-                     // progressbar.set_value(progress);
+    progressbar.set_value(progress);
 }
 
 void SoundBoardView::on_select_entry() {
@@ -172,7 +174,7 @@ void SoundBoardView::refresh_list() {
 
                 if (entry_extension == ".WAV") {
                     if (reader->open(u"/WAV/" + entry.path().native())) {
-                        if ((reader->channels() == 1) && (reader->bits_per_sample() == 8)) {
+                        if ((reader->channels() == 1) && ((reader->bits_per_sample() == 8) || (reader->bits_per_sample() == 16))) {
                             // sounds[c].ms_duration = reader->ms_duration();
                             // sounds[c].path = u"WAV/" + entry.path().native();
                             if (count >= (page - 1) * 100 && count < page * 100) {
@@ -211,7 +213,7 @@ void SoundBoardView::refresh_list() {
 
         for (size_t n = 0; n < file_list.size(); n++) {
             menu_view.add_item({file_list[n].string().substr(0, 30),
-                                ui::Color::white(),
+                                ui::Color::dark_magenta(),
                                 nullptr,
                                 [this](KeyEvent) {
                                     on_select_entry();
@@ -238,7 +240,7 @@ SoundBoardView::SoundBoardView(
                   &options_tone_key,
                   //&text_title,
                   //&text_duration,
-                  //&progressbar,
+                  &progressbar,
                   &field_volume,
                   &text_volume_disabled,
                   &page_info,

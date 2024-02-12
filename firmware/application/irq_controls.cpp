@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 Jared Boone, ShareBrained Technology, Inc.
+ * Copyright (C) 2024 Mark Thompson
  *
  * This file is part of PortaPack.
  *
@@ -162,12 +163,11 @@ static bool switches_update(const uint8_t raw) {
 }
 
 static bool encoder_update(const uint8_t raw) {
-    // TODO: swap +1/-1 directions in encoder.update() to avoid needless swizzing of phase bits here
-    return encoder_debounce.feed(((raw >> 7) & 0x01) | ((raw >> 5) & 0x02));
+    return encoder_debounce.feed(raw >> 6);
 }
 
 static bool encoder_read() {
-    auto delta = encoder.update(encoder_debounce.state());
+    auto delta = encoder.update(encoder_debounce.state()) * encoder_debounce.rotation_rate();
 
     if (injected_encoder > 0) {
         if (injected_encoder == 1) delta = -1;

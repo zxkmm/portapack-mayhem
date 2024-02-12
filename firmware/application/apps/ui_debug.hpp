@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 Jared Boone, ShareBrained Technology, Inc.
+ * Copyright (C) 2024 Mark Thompson
  *
  * This file is part of PortaPack.
  *
@@ -385,7 +386,6 @@ class DebugScreenTest : public View {
     bool on_key(KeyEvent key) override;
     bool on_encoder(EncoderEvent delta) override;
     bool on_touch(TouchEvent event) override;
-    uint16_t semirand();
     void paint(Painter& painter) override;
 
    private:

@@ -73,6 +73,10 @@ class BtnGridView : public View {
 
     void set_parent_rect(const Rect new_parent_rect) override;
     void set_arrow_enabled(bool enabled);
+
+    void next_page();
+    void previous_page();
+
     void on_focus() override;
     void on_blur() override;
     void on_show() override;
@@ -94,6 +98,15 @@ class BtnGridView : public View {
     SignalToken signal_token_tick_second{};
     std::vector<GridItem> menu_items{};
     std::vector<std::unique_ptr<NewButton>> menu_item_views{};
+
+    Button button_previous_page{
+        {0, 320 - 32, 50, 32},
+        "^"};
+
+
+    Button button_next_page{
+        {100, 320 - 32, 50, 32},
+        "v"};
 
     Image arrow_more{
         {228, 320 - 8, 8, 8},

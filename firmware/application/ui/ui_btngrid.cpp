@@ -42,7 +42,15 @@ BtnGridView::BtnGridView(
         this->on_tick_second();
     };
 
-    add_child(&arrow_more);
+    add_children({&arrow_more,
+              &button_previous_page,
+              &button_next_page});
+
+
+    button_previous_page.on_select = [this](Button&) { this->previous_page(); };
+    button_next_page.on_select = [this](Button&) { this->next_page(); };
+
+
     arrow_more.set_focusable(false);
     arrow_more.set_foreground(Theme::getInstance()->bg_darkest->background);
 }
@@ -221,6 +229,25 @@ bool BtnGridView::set_highlighted(int32_t new_value) {
 
 uint32_t BtnGridView::highlighted_index() {
     return highlighted_item;
+}
+
+void BtnGridView::next_page() {
+    size_t new_offset = offset + displayed_max;
+    if (new_offset < menu_items.size()) {
+        offset = new_offset;
+        update_items();
+        set_highlighted(offset);
+    }
+    set_dirty();
+}
+
+void BtnGridView::previous_page() {
+    if (offset >= displayed_max) {
+        offset -= displayed_max;
+        update_items();
+        set_highlighted(offset + displayed_max - 1);
+    }
+    set_dirty();
 }
 
 void BtnGridView::on_focus() {

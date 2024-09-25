@@ -73,12 +73,12 @@ set(HACKRF_FIRMWARE_DFU_IMAGE ${hackrf_usb_BINARY_DIR}/${HACKRF_FIRMWARE_DFU_FIL
 set(HACKRF_FIRMWARE_BIN_IMAGE ${hackrf_usb_BINARY_DIR}/${HACKRF_FIRMWARE_BIN_FILENAME})
 
 # this seems causing some issues (ref. in discord discussions), so temporarily disabled, until figure out the pros and cons and bugs of this tool.
-#find_program(CCACHE "ccache")
-#if(CCACHE)
-#    set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})
-#    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
-#    set(ENV{CCACHE_SLOPPINESS} pch_defines,time_macros)
-#endif(CCACHE)
+find_program(CCACHE "ccache")
+if(CCACHE)
+    set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
+    set(ENV{CCACHE_SLOPPINESS} pch_defines,time_macros)
+endif(CCACHE)
 
 enable_testing()
 add_subdirectory(firmware)

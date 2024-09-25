@@ -848,6 +848,10 @@ void UtilitiesMenuView::on_populate() {
     add_apps(nav_, *this, UTILITIES);
 
     addExternalItems(nav_, app_location_t::UTILITIES, *this);
+
+    for (int64_t i = 0; i < 100; i++) {
+        add_item({"Test " + to_string_dec_int(i), Theme::getInstance()->fg_light->foreground, &bitmap_icon_previous, [this]() { nav_.pop(); }});
+    }
 }
 
 /* SystemMenuView ********************************************************/

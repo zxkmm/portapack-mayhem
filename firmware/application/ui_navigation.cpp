@@ -1031,9 +1031,6 @@ bool BMPView::on_touch(const TouchEvent event) {
 
     switch (event.type) {
         case TouchEvent::Type::Start:
-            return false;
-
-        case TouchEvent::Type::End:
             handle_pop();
             return false;
 

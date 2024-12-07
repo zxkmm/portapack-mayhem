@@ -344,7 +344,7 @@ class GeoMapView : public View {
         {0, GeoMap::banner_height, GeoMap::geomap_rect_width, GeoMap::geomap_rect_height}};
 
     Button button_ok{
-        {screen_width - 5 * 8, 0, 5 * 8, 3 * 16},
+        {screen_width - 15 * 8, 0, 15 * 8, 1 * 16},
         "OK"};
 };
 

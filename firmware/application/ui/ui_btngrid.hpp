@@ -83,6 +83,8 @@ class BtnGridView : public View {
 
     void update_items();
 
+    bool on_touch(const TouchEvent event) override;
+
    protected:
     virtual void on_populate() = 0;
 

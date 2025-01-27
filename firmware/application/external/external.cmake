@@ -158,6 +158,11 @@ set(EXTCPPSRC
     # wav viewer
     external/wav_view/main.cpp
     external/wav_view/ui_view_wav.cpp
+
+	# scanner
+	external/scanner/main.cpp
+	external/scanner/ui_scanner.cpp
+
 )
 
 set(EXTAPPLIST
@@ -199,4 +204,5 @@ set(EXTAPPLIST
 	app_manager
     antenna_length
     view_wav
+	scanner
 )

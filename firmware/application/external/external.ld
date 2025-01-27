@@ -61,6 +61,8 @@ MEMORY
     ram_external_app_app_manager(rwx) : org = 0xADD40000, len = 32k 
     ram_external_app_antenna_length(rwx) : org = 0xADD50000, len = 32k 
     ram_external_app_view_wav(rwx) : org = 0xADD60000, len = 32k 
+    ram_external_app_scanner(rwx) : org = 0xADD70000, len = 32k 
+
 }
 
 SECTIONS
@@ -293,5 +295,11 @@ SECTIONS
         KEEP(*(.external_app.app_view_wav.application_information));
         *(*ui*external_app*view_wav*);
     } > ram_external_app_view_wav
+
+    .external_app_scanner : ALIGN(4) SUBALIGN(4)
+    {
+        KEEP(*(.external_app.app_scanner.application_information));
+        *(*ui*external_app*scanner*);
+    } > ram_external_app_scanner
 
 }

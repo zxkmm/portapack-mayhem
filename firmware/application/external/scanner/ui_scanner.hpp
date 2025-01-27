@@ -39,7 +39,7 @@
 #define STATISTICS_UPDATES_PER_SEC 10
 #define MAX_FREQ_LOCK 10  // # of 50ms cycles scanner locks into freq when signal detected, to verify signal is not spurious
 
-namespace ui {
+namespace ui::external_app::scanner {
 
 // TODO: There is too much duplicated data in these classes.
 // ScannerThread should just use more from the View.
@@ -315,4 +315,4 @@ class ScannerView : public View {
         }};
 };
 
-} /* namespace ui */
+} /* namespace ui::external_app::scanner */
